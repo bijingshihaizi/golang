@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  redis:
+    command: redis-server --bind 0.0.0.0 --databases 32 # /data/redis.conf
+    image: redis:3.2-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis/db:/data
+    restart: always
+    # networks:
+    #       default:
+    #         ipv4_address: 10.6.0.3
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2"
+    #       memory: "2G"
+  jaeger:
+    image: jaegertracing/all-in-one:1.22.0
+    restart: always
+    ports:
+        - "5775:5775/udp"
+        - "6831:6831/udp"
+        - "6832:6832/udp"
+        - "5778:5778"
+        - "16686:16686"
+        - "14268:14268"
+        - "14250:14250"
+        - "9411:9411"
+    environment:
+        COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+
+  t_golang:
+    image: registry.cn-beijing.aliyuncs.com/dbj-base/pay.parkingpay-golang-protobuf:golang1.6
+    ports:
+      - 8600:8600
+    volumes:
+      - ./t_golang:/go/src/github.com/t_golang
+    restart: always
+    working_dir: /go/src/github.com/t_golang/
+    entrypoint: ./startup.sh
+# networks:
+#   default:
+#     external:
+#       name: services
+    
