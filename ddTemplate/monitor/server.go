@@ -1,18 +1,19 @@
 package main
 
 import (
-	"fmt"
-	"github.com/monitor/database"
-	_ "github.com/go-sql-driver/mysql"
-	"net/rpc"
-	"net"
-	"net/rpc/jsonrpc"
 	"database/sql"
-	"syscall"
-	"strings"
-	"net/http"
+	"fmt"
 	"io/ioutil"
+	"net"
+	"net/http"
+	"net/rpc"
+	"net/rpc/jsonrpc"
+	"strings"
+	"syscall"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/monitor/database"
 )
 
 func main() {
@@ -32,31 +33,31 @@ func main() {
 }
 
 type Tmp struct {
-	Id int `json:"id"`
-	Webhook string `json:"webhook"`
-	Title string `json:"title"`
-	Content string `json:"content"`
-	At string `json:"at"`
+	Id         int    `json:"id"`
+	Webhook    string `json:"webhook"`
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+	At         string `json:"at"`
 	CreateTime string `json:"create_time"`
 	UpdateTime string `json:"update_time"`
 }
 
-func getTmp(DB *sql.DB,data map[string]interface{})  {
+func getTmp(DB *sql.DB, data map[string]interface{}) {
 	var tmp Tmp
-	row := DB.QueryRow("select * from `parking_template` where id = "+ data["templateId"].(string))
-	if err := row.Scan(&tmp.Id, &tmp.Webhook,&tmp.Title,&tmp.Content,&tmp.At,&tmp.CreateTime,&tmp.UpdateTime); err != nil {
+	row := DB.QueryRow("select * from `parking_template` where id = " + data["templateId"].(string))
+	if err := row.Scan(&tmp.Id, &tmp.Webhook, &tmp.Title, &tmp.Content, &tmp.At, &tmp.CreateTime, &tmp.UpdateTime); err != nil {
 		fmt.Println(err)
 	}
 	title := tmp.Title
 	v, _ := syscall.Getenv("ENV_NAME")
 	if v == "dev" {
-		title = title+"(测试)"
+		title = title + "(测试)"
 	}
 
 	str := tmp.Content
 
 	data["title"] = title
-	for key,val := range data {
+	for key, val := range data {
 		str = strings.Replace(str, key, val.(string)+"\\n", -1)
 	}
 
@@ -64,10 +65,10 @@ func getTmp(DB *sql.DB,data map[string]interface{})  {
 
 	context := `{
 			"msgtype": "text",
-			"text": {"content":"通知类型：`+title+`\n通知时间：`+times+`\n`+str+`"},
+			"text": {"content":"通知类型：` + title + `\n通知时间：` + times + `\n` + str + `"},
 			"at": {
 				"atMobiles": [
-		    		`+tmp.At+`
+		    		` + tmp.At + `
 				],
 					"isAtAll": false
 			}}`
@@ -87,7 +88,6 @@ func getTmp(DB *sql.DB,data map[string]interface{})  {
 	//      	}
 	//	}`
 
-
 	fmt.Println(context)
 	//创建一个请求
 	req, err := http.NewRequest("POST", tmp.Webhook, strings.NewReader(context))
@@ -97,13 +97,13 @@ func getTmp(DB *sql.DB,data map[string]interface{})  {
 	client := &http.Client{}
 	//设置请求头
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-agent","firefox")
+	req.Header.Set("User-agent", "firefox")
 	//发送请求
 	resp, err := client.Do(req)
 	//关闭请求
 	defer resp.Body.Close()
 	fmt.Println(resp.StatusCode)
-	body,_ := ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
 	if err != nil {
 		fmt.Println("handle error")
@@ -112,14 +112,14 @@ func getTmp(DB *sql.DB,data map[string]interface{})  {
 
 type Notify string
 
-type Reply struct {}
+type Reply struct{}
 
-func (n *Notify) Send(data map[string]interface{},reply *Reply) error {
-	getTmp(database.DB,data)
+func (n *Notify) Send(data map[string]interface{}, reply *Reply) error {
+	getTmp(database.DB, data)
 	return nil
 }
 
-func (n *Notify) GetUrl(data map[string]interface{},reply *Reply) error {
-	getTmp(database.DB,data)
+func (n *Notify) GetUrl(data map[string]interface{}, reply *Reply) error {
+	getTmp(database.DB, data)
 	return nil
 }

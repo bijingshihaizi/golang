@@ -2,13 +2,11 @@
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 
-# 安装rpcx 
-go get -u -v github.com/smallnest/rpcx/...
-go get github.com/rpcxio/rpcx-gateway
-go get github.com/smallnest/rpcx/codec
-go get gorm.io/driver/mysql
-go get gorm.io/gorm
-
+go get google.golang.org/grpc@v1.37.0
+go get golang.org/x/net/context@v0.0.0-20210614182718-04defd469f4e
+go get github.com/golang/protobuf/protoc-gen-go/generator@v1.5.2
+go get github.com/golang/protobuf/ptypes/struct@v1.5.2
+go get "github.com/robfig/cron"
 go mod init
 
 
