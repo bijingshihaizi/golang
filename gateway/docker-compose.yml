@@ -1,0 +1,96 @@
+version: '3'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.22.0
+    restart: always
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    environment:
+      COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+  zookeeper:
+    image: wurstmeister/zookeeper
+    volumes:
+      - ./data:/data
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.199.88:9092
+      KAFKA_CREATE_TOPICS: "test:2:0"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+    volumes:
+      #- /data/product/zj_bigdata/data/kafka/docker.sock:/var/run/docker.sock
+      - ./kafka-logs:/kafka
+    depends_on:
+      - zookeeper
+
+  accu-gateway-udp-microservice:
+    image: registry.cn-beijing.aliyuncs.com/dbj-base/pay.parkingpay-golang-protobuf:golang1.6
+    ports:
+      - 10027:10027/udp
+    environment:
+      - GIT_TERMINAL_PROMPT=1 
+      - JAEGER_SERVICE_NAME=accu-gateway-udp-microservice
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+      - CLOUDACCU_GATEWAY_UDP_KAFKA_ADDR=192.168.199.88:9092
+    volumes:
+      - ./accu-gateway-udp-microservice:/go/src/github.com/linketech/accu-gateway-udp-microservice
+    working_dir: /go/src/github.com/linketech/accu-gateway-udp-microservice/
+    entrypoint: ./startup.sh
+  
+  accu-udp-terminal-microservice:
+    image: registry.cn-beijing.aliyuncs.com/dbj-base/pay.parkingpay-golang-protobuf:golang1.6
+    ports:
+      - 10029:10029/udp
+    environment:
+      - GIT_TERMINAL_PROMPT=1
+      - JAEGER_SERVICE_NAME=accu-udp-terminal-microservice
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831
+      - CLOUDHAWK_UDP_TERMINALKAFKA_ADDR=192.168.199.88:9092
+      - MYSQL_HOST=192.168.199.88
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PWD=root
+      - MYSQL_DATABASE=accu_udp
+      - MYSQL_POOL_SIZE=
+      - MYSQL_POOL_IDLE_CONNS=
+      - MYSQL_SHOW_SQL=
+      - REDIS_SERVER=39.106.10.158:6379
+      - REDIS_PASSWORD=pprt123
+      - REDIS_DB=21
+    volumes:
+      - ./accu-udp-terminal-microservice:/go/src/github.com/linketech/accu-udp-terminal-microservice
+    working_dir: /go/src/github.com/linketech/accu-udp-terminal-microservice/
+    entrypoint: ./startup.sh
+
+  # mysql:
+  #   image: mysql:5.7
+  #   build: . 
+  #   # volumes:
+  #   #   - ./db:/var/lib/mysql
+  #   #   - ./conf.d/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=root
+  #     # - MYSQL_USER=root
+  #     - MYSQL_PASSWORD=root
+  #   ports: 
+  #     - 3306:3306
+  #   command: --lower-case-table-names=1
+  #   restart: always
+  #   container_name: "mysql-master"
+
