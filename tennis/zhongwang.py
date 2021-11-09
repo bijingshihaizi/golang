@@ -10,6 +10,7 @@ import json
 import time
 import urllib.parse
 
+from timer import Timer
 from requests.models import Response
 
 # 提交订单
@@ -19,7 +20,7 @@ def addParkOrder(string):
     # payload='userid=21201&parkList=%5B%7B%22date%22%3A%222021-11-10%22%2C%22time%22%3A%2216%22%2C%22parkid%22%3A%224%22%2C%22parkname%22%3A%22V4%22%7D%5D&paywaycode=2&addOrderType=wx&captchaVerification='+urllib.parse.urlencode(string)
     payload={}
     payload['userid']='21201'
-    payload['parkList']='[{"date":"2021-11-12","time":"21","parkid":"4","parkname":"V4"}]'
+    payload['parkList']='[{"date":"2021-11-13","time":"18","parkid":"4","parkname":"V4"}],[{"date":"2021-11-13","time":"19","parkid":"4","parkname":"V4"}]'
     payload['paywaycode']='2'
     payload['cardnumber']=''
     payload['mobile']=''
@@ -122,6 +123,7 @@ def AesDecryptECB(secretKey,text):
     return encrypt_data
 
 if __name__ == '__main__':
+    Timer().start()
     condition = True
     while condition:
         response = getPictureInfo()
