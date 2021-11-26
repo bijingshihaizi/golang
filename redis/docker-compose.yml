@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  redis:
+    command: redis-server --bind 0.0.0.0 --requirepass 'pprt123' --databases 32 # /data/redis.conf
+    image: redis:3.2-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - ./db:/data
+    restart: always
+    # networks:
+    #       default:
+    #         ipv4_address: 10.6.0.3
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2"
+    #       memory: "2G"
+networks:
+  default:
+    external:
+      name: services

@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    build: .
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./conf.d/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=1994y07s07q
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=1994y07s07q
+    ports:
+      - 3306:3306
+    command: --lower-case-table-names=1
+    restart: always
+    container_name: "mysql-master"
+    networks:
+      default:
+        ipv4_address: 10.6.0.2
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: "2G"
+networks:
+  default:
+    external:
+      name: services
