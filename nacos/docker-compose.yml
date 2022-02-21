@@ -1,0 +1,18 @@
+version: "3"
+services:
+  nacos:
+    image: nacos/nacos-server:2.0.0
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: 192.168.199.88
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: 123123
+      MYSQL_SERVICE_DB_NAME: nacos
+      MYSQL_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+    volumes:
+      - ./logs:/home/caowenlong/golang/nacos/logs
+      - ./data:/home/caowenlong/golang/nacos/data
+    ports:
+      - "8848:8848"
+    restart: on-failure
