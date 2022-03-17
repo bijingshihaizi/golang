@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+    nginx:
+        image: nginx:latest
+        environment:
+            - TZ=Asia/Shanghai
+        # 端口映射
+        ports:
+            - "80:80"
+            - "443:443"
+        # 数据卷
+        volumes:
+            # 映射主机./conf.d目录到容器/etc/nginx/conf.d目录
+            - "$PWD/nginx/conf.d:/etc/nginx/conf.d"
+            - "$PWD/nginx/project:/var/www/html"
+            - "$PWD/nginx/cert:/usr/local"
+        # 容器名称
+        container_name: "compose-nginx"
